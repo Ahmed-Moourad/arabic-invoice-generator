@@ -553,35 +553,23 @@
         <div class="steps">
           <div class="step">
             <div class="step-num">١</div>
-            <span>أدخل اسم العميل، نوع السيارة، والتاريخ في الحقول أعلاه</span>
+            <span>أدخل اسم العميل، نوع السيارة الافتراضي، والتاريخ في الحقول أعلاه</span>
           </div>
           <div class="step">
             <div class="step-num">٢</div>
-            <span
-              >في صندوق الأصناف، كل سطر = صنف واحد: <b>اسم الصنف</b> ثم
-              <b>السعر</b> في النهاية</span
-            >
+            <span>في صندوق الأصناف، كل سطر = صنف واحد: <b>اسم الصنف</b> ثم <b>السعر</b> في النهاية</span>
           </div>
           <div class="step">
             <div class="step-num">٣</div>
-            <span
-              >للكميات أكثر من واحد، ضع الرقم في بداية السطر:
-              <code
-                style="
-                  background: rgba(245, 200, 66, 0.15);
-                  padding: 1px 5px;
-                  border-radius: 3px;
-                "
-                >٢ زيت الفتيس ٥٥٠٠</code
-              ></span
-            >
+            <span>للكميات أكثر من واحد، ضع الرقم في بداية السطر: <code style="background:rgba(245,200,66,0.15);padding:1px 5px;border-radius:3px;">٢ زيت الفتيس ٥٥٠٠</code></span>
           </div>
           <div class="step">
             <div class="step-num">٤</div>
-            <span
-              >اضغط <b>إنشاء الفاتورة</b> ← ستفتح نافذة الطباعة ← غيّر الوجهة
-              إلى <b>Save as PDF</b> ← احفظ</span
-            >
+            <span>لسيارة مختلفة في نفس الفاتورة، أضف <code style="background:rgba(245,200,66,0.15);padding:1px 5px;border-radius:3px;">@نوع السيارة</code> قبل السعر مباشرة: <code style="background:rgba(245,200,66,0.15);padding:1px 5px;border-radius:3px;">تيل أمامي @نيسان صني ٢٠١٨ ١٧٠٠</code></span>
+          </div>
+          <div class="step">
+            <div class="step-num">٥</div>
+            <span>اضغط <b>إنشاء الفاتورة</b> ← ستفتح نافذة الطباعة ← غيّر الوجهة إلى <b>Save as PDF</b> ← احفظ</span>
           </div>
         </div>
       </div>
@@ -595,7 +583,7 @@
             <input id="customerName" type="text" placeholder="محمد" />
           </div>
           <div>
-            <label>نوع السيارة</label>
+            <label>نوع السيارة الافتراضي</label>
             <input id="carType" type="text" placeholder="تويوتا كرولا ٢٠٢١" />
           </div>
           <div>
@@ -607,14 +595,17 @@
         <label>الأصناف</label>
         <div class="hint">
           كل سطر = صنف واحد &nbsp;|&nbsp; السعر في نهاية السطر<br />
-          مثال: <code>فلتر هواء ٢٠٠</code> &nbsp;&nbsp; للكميات:
-          <code>٢ فانوس امامي ١٠٠٠٠</code>
+          مثال سيارة واحدة: <code>فلتر هواء ٢٠٠</code><br/>
+          لتحديد سيارة مختلفة في نفس الفاتورة، أضف <code>@نوع السيارة</code> قبل السعر:<br/>
+          <code>فلتر هواء @تويوتا كرولا ٢٠٢١ ٢٠٠</code> &nbsp;|&nbsp; <code>٢ تيل أمامي @نيسان صني ٢٠١٨ ١٧٠٠</code>
         </div>
 
         <textarea
           id="inputData"
           placeholder="فلتر هواء ٢٠٠
-٢ زيت الفتيس ٦٥٠٠
+فلتر زيت موتور ٢٠٠
+٢ زيت الفتيس @تويوتا كرولا ٢٠٢١ ٥٥٠٠
+تيل أمامي @نيسان صني ٢٠١٨ ١٧٠٠
 طلمبة مياة ٢٥٠٠"
         ></textarea>
 
@@ -756,10 +747,21 @@
         return result;
       }
 
-      function parseLine(line) {
+      function parseLine(line, defaultCarType) {
         line = line.trim();
         if (!line) return null;
+        // Strip leading number-dash (e.g. "1-")
         line = line.replace(/^[٠-٩0-9]+\s*[-–]\s*/, "");
+
+        // Extract @carType if present
+        let itemCarType = defaultCarType;
+        const atMatch = line.match(/@([^@]+?)\s+([٠-٩\d,،]+)\s*$/);
+        if (atMatch) {
+          itemCarType = atMatch[1].trim();
+          // Remove the @cartype part from line, keep name and price
+          line = line.replace(/@[^@]+?\s+([٠-٩\d,،]+)\s*$/, "$1");
+        }
+
         const w = toWestern(line);
         const priceMatch = w.match(/(\d[\d,]*)\s*$/);
         if (!priceMatch) return null;
@@ -767,23 +769,20 @@
         let namepart = line.replace(/[٠-٩\d,،]+\s*$/, "").trim();
         let qty = 1;
         const qtyMatch = toWestern(namepart).match(/^(\d{1,2})\s+(.+)/);
-        if (
-          qtyMatch &&
-          parseInt(qtyMatch[1]) >= 2 &&
-          parseInt(qtyMatch[1]) <= 99
-        ) {
+        if (qtyMatch && parseInt(qtyMatch[1]) >= 2 && parseInt(qtyMatch[1]) <= 99) {
           qty = parseInt(qtyMatch[1]);
           namepart = namepart.replace(/^[٠-٩\d]+\s+/, "").trim();
         }
-        return { name: namepart, qty, price: price * qty };
+        return { name: namepart, qty, price: price * qty, carType: itemCarType };
       }
 
       function getItems() {
+        const defaultCarType = document.getElementById("carType").value || "تويوتا كرولا ٢٠٢١";
         return document
           .getElementById("inputData")
           .value.trim()
           .split("\n")
-          .map(parseLine)
+          .map(line => parseLine(line, defaultCarType))
           .filter(Boolean);
       }
 
@@ -804,15 +803,15 @@
           preview.style.display = "none";
           return;
         }
-        let total = 0,
-          html = "";
+        let total = 0, html = "";
         items.forEach((item) => {
           total += item.price;
           html += `<div class="preview-item">
-          <span class="preview-item-price">${numWithCommas(item.price)} جنيه</span>
-          ${item.qty > 1 ? `<span class="preview-qty">×${item.qty}</span>` : ""}
-          <span class="preview-item-name">${item.name}</span>
-        </div>`;
+            <span class="preview-item-price">${numWithCommas(item.price)} جنيه</span>
+            ${item.qty > 1 ? `<span class="preview-qty">×${item.qty}</span>` : ""}
+            <span class="preview-qty" style="color:var(--accent);opacity:0.8;">${item.carType}</span>
+            <span class="preview-item-name">${item.name}</span>
+          </div>`;
         });
         document.getElementById("previewItems").innerHTML = html;
         document.getElementById("previewTotal").textContent =
@@ -821,7 +820,7 @@
         setStatus("تم تحليل " + items.length + " صنف بنجاح ✓", "success");
       }
 
-      function buildInvoiceHTML(items, customerName, carType, invoiceDate) {
+      function buildInvoiceHTML(items, customerName, invoiceDate) {
         const total = items.reduce((s, i) => s + i.price, 0);
         const totalWords = numToArabicWords(total);
         const minRows = Math.max(items.length, 12);
@@ -832,7 +831,7 @@
             const item = items[i];
             rows += `<tr>
             <td class="col-price">${numWithCommas(item.price)}</td>
-            <td>${carType}</td>
+            <td>${item.carType}</td>
             <td>${item.qty}</td>
             <td class="col-desc">${item.name}</td>
           </tr>`;
@@ -924,14 +923,12 @@
 
         const customerName =
           document.getElementById("customerName").value || "محمد";
-        const carType =
-          document.getElementById("carType").value || "تويوتا كرولا ٢٠٢١";
         const invoiceDate =
           document.getElementById("invoiceDate").value ||
           new Date().toLocaleDateString("ar-EG");
 
         document.getElementById("invoicePrintArea").innerHTML =
-          buildInvoiceHTML(items, customerName, carType, invoiceDate);
+          buildInvoiceHTML(items, customerName, invoiceDate);
 
         setStatus(
           "جاري فتح نافذة الطباعة… اختر «Save as PDF» لحفظ الفاتورة",
