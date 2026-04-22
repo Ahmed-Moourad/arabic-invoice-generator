@@ -367,9 +367,7 @@
 
       .invoice-page {
         width: 210mm;
-        height: 297mm;
-        max-height: 297mm;
-        overflow: hidden;
+        min-height: 297mm;
         padding: 12mm 12mm 12mm 12mm;
         background: #fff;
         color: #111;
@@ -447,11 +445,11 @@
       }
 
       .inv-table tbody td {
-        padding: 4px 7px;
+        padding: 5px 7px;
         border: 0.5px solid #ddd;
         text-align: center;
         color: #222;
-        height: 18px;
+        height: 21px;
       }
       .inv-table tbody td.col-desc {
         text-align: right;
@@ -480,7 +478,7 @@
       .inv-footer-divider {
         border: none;
         border-top: 0.5px solid #ccc;
-        margin: 3mm 0 2mm;
+        margin: 5mm 0 4mm;
       }
 
       .inv-logos-row {
@@ -502,16 +500,10 @@
       }
 
       .inv-logo-img {
-        height: 32px;
+        height: 28px;
         width: auto;
-        max-width: 75px;
+        max-width: 70px;
         object-fit: contain;
-      }
-
-      .inv-logo-img.logo-kia,
-      .inv-logo-img.logo-hyundai {
-        height: 42px;
-        max-width: 90px;
       }
 
       .inv-footer-boxes {
@@ -530,7 +522,7 @@
         text-align: right;
       }
       .inv-box + .inv-box {
-        border-right: none;
+        border-left: none;
       }
       .inv-box-title {
         display: block;
@@ -831,7 +823,7 @@
       function buildInvoiceHTML(items, customerName, invoiceDate) {
         const total = items.reduce((s, i) => s + i.price, 0);
         const totalWords = numToArabicWords(total);
-        const minRows = Math.max(items.length, 10);
+        const minRows = Math.max(items.length, 12);
 
         let rows = "";
         for (let i = 0; i < minRows; i++) {
@@ -864,13 +856,13 @@
         <!-- Car brand logos row 2 -->
         <div class="inv-logos-row" style="margin-bottom:2mm;">
           <div class="inv-logo-item"><img src="assets/logos/subaru.png" alt="SUBARU" class="inv-logo-img"></div>
-          <div class="inv-logo-item"><img src="assets/logos/hyundai.png" alt="HYUNDAI" class="inv-logo-img logo-hyundai"></div>
+          <div class="inv-logo-item"><img src="assets/logos/hyundai.png" alt="HYUNDAI" class="inv-logo-img"></div>
           <!-- INVOICE BOX (center) -->
           <div class="inv-logo-item" style="flex:2;">
             <div class="inv-title-box">فـاتـورة</div>
           </div>
           <div class="inv-logo-item"><img src="assets/logos/mitsubishi.png" alt="MITSUBISHI" class="inv-logo-img"></div>
-          <div class="inv-logo-item"><img src="assets/logos/kia.png" alt="KIA" class="inv-logo-img logo-kia"></div>
+          <div class="inv-logo-item"><img src="assets/logos/kia.png" alt="KIA" class="inv-logo-img"></div>
         </div>
 
         <hr class="inv-divider" />
