@@ -722,8 +722,13 @@
         let result = "";
         if (n >= 20000) {
           const th = Math.floor(n / 1000);
-          result += tens[Math.floor(th / 10)];
-          if (th % 10 > 0) result += " و" + ones[th % 10];
+          const thOnes = th % 10;
+          const thTens = Math.floor(th / 10);
+          if (thOnes > 0) {
+            result += ones[thOnes] + " و" + tens[thTens];
+          } else {
+            result += tens[thTens];
+          }
           result += " ألف";
           n = n % 1000;
         } else if (n >= 1000) {
@@ -736,9 +741,15 @@
           n = n % 100;
         }
         if (n >= 20) {
+          const remOnes = n % 10;
+          const remTens = Math.floor(n / 10);
           if (result) result += " و";
-          result += tens[Math.floor(n / 10)];
-          n = n % 10;
+          if (remOnes > 0) {
+            result += ones[remOnes] + " و" + tens[remTens];
+          } else {
+            result += tens[remTens];
+          }
+          n = 0;
         }
         if (n > 0) {
           if (result) result += " و";
